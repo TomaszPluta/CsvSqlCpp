@@ -11,10 +11,11 @@
 CsvSql::CsvSql ()
 {
 
-
 }
 
-bool CsvSql::Connect(std::string host,  std::string user, std::string password, std::string  dataBase)
+
+
+void CsvSql::Connect(std::string host,  std::string user, std::string password, std::string  dataBase)
 {
     std::ifstream dbFile;
     dbFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -22,16 +23,23 @@ bool CsvSql::Connect(std::string host,  std::string user, std::string password, 
         dbFile.open(dataBase.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
     } catch(const std::ifstream::failure& e) {
         std::cerr << "Error: " << e.what();
-        return false;
     }
+    
+
+
+if ( dbFile.peek() == std::ifstream::traits_type::eof() )
+{
+     throw std::runtime_error("Could not open file");
+}
 
     std::vector<std::string> tables;
     std::string table;
-
-    while(!dbFile.eof() &&(dbFile >> table)) {
-
+    
+      while(!dbFile.eof() &&(dbFile >> table)) {
         tables.push_back(table);
     }
+    
+    
     std::cout<<"database in use: " << dataBase<<std::endl;
     std::cout<<"tables: " << std::endl;
     for (auto i : tables) { //debug
@@ -39,7 +47,6 @@ bool CsvSql::Connect(std::string host,  std::string user, std::string password, 
     }
     std::cout<<std::endl;
 
-return true;
 }
 
 
@@ -53,6 +60,8 @@ std::string  CsvSql::SendQuerry(std::string querry)
         token.erase(std::remove(token.begin(), token.end(), ','), token.end());
         tokens.push_back(token);
     }
+
+
 
     std::cout<<"querry tokens nb: "<< tokens.size()<<"\ncontent: "<<std::endl;
     for (auto i : tokens) { //debug
@@ -88,9 +97,22 @@ std::string  CsvSql::SendQuerry(std::string querry)
             std::getline(tableFile, header) ;
             std::cout<<"header: "<<header<<std::endl;
 
+//std::string sentence;
+//std::getline(std::cin,sentence);
+//std::istringstream iss(sentence);
+//std::vector<std::string> my;
+//std::string word;
+//while(iss >> word) {
+//    my.push_back(word);
+//}
+
+//or erase remove " "
+
+
             std::string column;
             std::stringstream headerStream(header);
             while(getline(headerStream, column, ',')) {
+                column.erase(std::remove(column.begin(), column.end(), ' '), column.end());
                 columnsFile.push_back((column));
             }
             
