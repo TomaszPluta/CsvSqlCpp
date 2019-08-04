@@ -50,6 +50,14 @@ if ( dbFile.peek() == std::ifstream::traits_type::eof() )
 }
 
 
+void CsvSql::RemoveWhitespace(std::string &s){  
+       s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+}
+
+void CsvSql::RemoveComma(std::string &s){  
+       s.erase(std::remove(s.begin(), s.end(), ','), s.end());
+}
+
 
 std::string  CsvSql::SendQuerry(std::string querry)
 {
@@ -97,22 +105,12 @@ std::string  CsvSql::SendQuerry(std::string querry)
             std::getline(tableFile, header) ;
             std::cout<<"header: "<<header<<std::endl;
 
-//std::string sentence;
-//std::getline(std::cin,sentence);
-//std::istringstream iss(sentence);
-//std::vector<std::string> my;
-//std::string word;
-//while(iss >> word) {
-//    my.push_back(word);
-//}
-
-//or erase remove " "
-
 
             std::string column;
             std::stringstream headerStream(header);
             while(getline(headerStream, column, ',')) {
-                column.erase(std::remove(column.begin(), column.end(), ' '), column.end());
+            //    column.erase(std::remove(column.begin(), column.end(), ' '), column.end());
+            RemoveComma(column);
                 columnsFile.push_back((column));
             }
             
@@ -134,22 +132,27 @@ std::string  CsvSql::SendQuerry(std::string querry)
             }
     
             
+            
             std::string line;
-            while((!tableFile.eof()  && getline(tableFile, line)))
-            {
+            std::ifstream tableFileIn(table);
+            while( getline(tableFileIn,line) ){
                 int i = 0;
                 std::stringstream ss(line);
                 std::string field;
-                while(getline(ss, field, ',')) {
+                while( getline(ss, field, ',')) {
+                    if (field.empty()){ 
+                        break;
+                    }
                     if ( (std::find(clmnsNb.begin(), clmnsNb.end(), i) !=clmnsNb.end())) {
+                        field.erase(std::remove(field.begin(), field.end(), ' '), field.end());
                         res += field + " ";
                     }
                      i++;
                 }
                 res +=  "\n";
             }
-          
-          
+                
+     
 
             std::cout<<"result:"<<std::endl<<res<<std::endl;
             
