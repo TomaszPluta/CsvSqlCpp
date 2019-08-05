@@ -1,20 +1,62 @@
 #include <CsvSql.h>
 #include <sstream>
-#include <vector>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
 
 
+template<class T>
+void DebugPrintVector(std::string vName, std::vector<T> & v)
+{
+    std::cout<<vName<<": "<<std::endl;
+    for (auto i : v) {
+        std::cout<<"- "<<i<<std::endl;
+    }
+    std::cout<<std::endl;
+}
 
+
+void CsvSql::RemoveCharsFromStr(std::string &s, char c)
+{
+    s.erase(std::remove(s.begin(), s.end(), c), s.end());
+}
+
+
+std::vector<std::string>  CsvSql::GetTokesFromQuerry(std::string querry)
+{
+    std::stringstream querryStream (querry);
+    std::string token;
+    std::vector<std::string> tokens;
+    while(getline(querryStream, token, ' ')) {
+        RemoveCharsFromStr(token, ',');
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @brief 
+ * @param querry
+ * @return 
+ */
 CsvSql::CsvSql ()
 {
 
 }
 
 
-
+/**
+ * @brief 
+ * @param querry
+ * @return 
+ */
 void CsvSql::Connect(std::string host,  std::string user, std::string password, std::string  dataBase)
 {
     std::ifstream dbFile;
@@ -24,60 +66,39 @@ void CsvSql::Connect(std::string host,  std::string user, std::string password, 
     } catch(const std::ifstream::failure& e) {
         std::cerr << "Error: " << e.what();
     }
-    
 
 
-if ( dbFile.peek() == std::ifstream::traits_type::eof() )
-{
-     throw std::runtime_error("Could not open file");
-}
+
+    if ( dbFile.peek() == std::ifstream::traits_type::eof() ) {
+        throw std::runtime_error("Could not open file");
+    }
 
     std::vector<std::string> tables;
     std::string table;
-    
-      while(!dbFile.eof() &&(dbFile >> table)) {
+    while(!dbFile.eof() &&(dbFile >> table)) {
         tables.push_back(table);
     }
-    
-    
+
     std::cout<<"database in use: " << dataBase<<std::endl;
-    std::cout<<"tables: " << std::endl;
-    for (auto i : tables) { //debug
-        std::cout<< "- "<<i <<std::endl;
-    }
-    std::cout<<std::endl;
+    DebugPrintVector("tables", tables);
 
 }
 
 
-void CsvSql::RemoveWhitespace(std::string &s){  
-       s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-}
 
-void CsvSql::RemoveComma(std::string &s){  
-       s.erase(std::remove(s.begin(), s.end(), ','), s.end());
-}
-
-
+/**
+ * @brief 
+ * @param querry
+ * @return 
+ */
 std::string  CsvSql::SendQuerry(std::string querry)
 {
-    std::stringstream querryStream (querry);
-    std::string token;
-    std::vector<std::string> tokens;
-    while(getline(querryStream, token, ' ')) {
-        token.erase(std::remove(token.begin(), token.end(), ','), token.end());
-        tokens.push_back(token);
-    }
+    std::vector<std::string> tokens = GetTokesFromQuerry(querry);
+    DebugPrintVector("tokens", tokens);
 
-
-
-    std::cout<<"querry tokens nb: "<< tokens.size()<<"\ncontent: "<<std::endl;
-    for (auto i : tokens) { //debug
-        std::cout<<"- "<<i<<std::endl;
-    }
-    std::cout<<std::endl;
-            std::string res;
-    if (tokens[0] == "SELECT") {
+    std::string res;
+    
+    if (*tokens.begin()== "SELECT") {
         std::vector<std::string> columnsQuerry;
         int i =1;
         while ((tokens[i] != "FROM") && (i<tokens.size())) {
@@ -85,7 +106,7 @@ std::string  CsvSql::SendQuerry(std::string querry)
             columnsQuerry.push_back(column);
             i++;
         }
-        i++; //skip keyword "from"
+        i++; //skip keyword "from"Nb
         std::string table = tokens[i];
 
         std::cout<<"table in use: "<<table<<std::endl;
@@ -101,65 +122,64 @@ std::string  CsvSql::SendQuerry(std::string querry)
             }
 
             std::string header;
-            std::vector<std::string>columnsFile;
+
             std::getline(tableFile, header) ;
             std::cout<<"header: "<<header<<std::endl;
 
 
             std::string column;
+                        std::vector<std::string>columnsFile;
             std::stringstream headerStream(header);
             while(getline(headerStream, column, ',')) {
-            //    column.erase(std::remove(column.begin(), column.end(), ' '), column.end());
-            RemoveComma(column);
+                RemoveCharsFromStr(column, ' ');
                 columnsFile.push_back((column));
             }
-            
-           std::cout<<"columns: "<<std::endl;
+
+            std::cout<<"columns: "<<std::endl;
             for (auto i : columnsFile) {
                 std::cout<< "- "<<i <<std::endl;
             }
-             std::cout<<std::endl;
-            
-            
+            std::cout<<std::endl;
+
+
             std::vector<int> clmnsNb;
-            for (int i =0 ; i < columnsQuerry.size(); i++)
-            {
-                  for (int j =0 ;j < columnsFile.size(); j++){
+            for (int i =0 ; i < columnsQuerry.size(); i++) {
+                for (int j =0 ; j < columnsFile.size(); j++) {
                     if (columnsFile[j] == columnsQuerry[i]) {
                         clmnsNb.push_back(j);
                     }
-                  }
+                }
             }
-    
-            
-            
+
+
+
             std::string line;
             std::ifstream tableFileIn(table);
-            while( getline(tableFileIn,line) ){
+            while( getline(tableFileIn,line) ) {
                 int i = 0;
                 std::stringstream ss(line);
                 std::string field;
                 while( getline(ss, field, ',')) {
-                    if (field.empty()){ 
+                    if (field.empty()) {
                         break;
                     }
                     if ( (std::find(clmnsNb.begin(), clmnsNb.end(), i) !=clmnsNb.end())) {
-                        field.erase(std::remove(field.begin(), field.end(), ' '), field.end());
+                        RemoveCharsFromStr(field, ' ');
                         res += field + " ";
                     }
-                     i++;
+                    i++;
                 }
                 res +=  "\n";
             }
-                
-     
+
+
 
             std::cout<<"result:"<<std::endl<<res<<std::endl;
-            
-            
-                     std::cout<<std::endl;
-            
-            }
-                     return res;
-            }
+
+
+            std::cout<<std::endl;
+
+        }
+        return res;
+    }
 }
