@@ -17,23 +17,6 @@ void DebugPrintVector(std::string vName, std::vector<T> & v)
 }
 
 
-void CsvSql::RemoveCharsFromStr(std::string &s, char c)
-{
-    s.erase(std::remove(s.begin(), s.end(), c), s.end());
-}
-
-
-std::vector<std::string>  CsvSql::GetTokesFromQuerry(std::string querry)
-{
-    std::stringstream querryStream (querry);
-    std::string token;
-    std::vector<std::string> tokens;
-    while(getline(querryStream, token, ' ')) {
-        RemoveCharsFromStr(token, ',');
-        tokens.push_back(token);
-    }
-    return tokens;
-}
 
 std::vector<std::string> CsvSql::GetColumnsFromHeader(std::string header)
 {
@@ -88,6 +71,35 @@ return querredFields;
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void Querry::RemoveCharsFromStr(std::string &s, char c)
+{
+    s.erase(std::remove(s.begin(), s.end(), c), s.end());
+}
+
+
+std::vector<std::string>  Querry::GetTokes(std::string querry)
+{
+    std::stringstream querryStream (querry);
+    std::string token;
+    std::vector<std::string> tokens;
+    while(getline(querryStream, token, ' ')) {
+        RemoveCharsFromStr(token, ',');
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief 
@@ -141,19 +153,32 @@ void CsvSql::Connect(std::string host,  std::string user, std::string password, 
  * @param querry
  * @return 
  */
-std::string  CsvSql::SendQuerry(std::string querry)
+std::string  CsvSql::SendQuerry(Querry querry)
 {
-    std::vector<std::string> tokens = GetTokesFromQuerry(querry);
+    std::vector<std::string> tokens = querry.GetTokens();
     DebugPrintVector("tokens", tokens);
 
     std::string res;
     
-    if (*tokens.begin()== "SELECT") {
+    if (*tokens.begin()== "SELECT") {   //select querry derives from base "QUERRY" class
         std::vector<std::string> querredColumns;
-        int i =1;
+
+iterator vector.start()+1;
+        
+        find in vector "FROM" (enum keyword)
+        get new vector between (start+1) and founded from.
+        That new vector is columns.
+        Next iterator is table in use
+        
+        
+        for (auto i : tokens){
+            while ( i != "FROM"){
+                std::vector(input_iterator, input_iterator), in your case foo = std::vector(myVec.begin () + 100000, myVec.begin () + 150000);
+            }
+        }
+        
         while ((tokens[i] != "FROM") && (i<tokens.size())) {
-            std::string column = tokens[i];
-            querredColumns.push_back(column);
+            querredColumns.push_back( tokens[i]);
             i++;
         }
         i++; //skip keyword "from"Nb
@@ -162,7 +187,7 @@ std::string  CsvSql::SendQuerry(std::string querry)
         std::cout<<"table in use: "<<table<<std::endl;
 
 
-        if (1) {
+        if (1) { 
             std::fstream tableFile;
             tableFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
             try {
