@@ -165,7 +165,14 @@ std::string  CsvSql::SendQuerry(Querry querry)
         std::vector<std::string> querredColumns;
 
      std::vector<std::string>::iterator  it = tokens.begin() +1 ;
-     std::cout <<*it<<std::endl;
+    
+std::vector<std::string>::iterator   itr = (std::find(tokens.begin(), tokens.end(), std::string("FROM")) );
+ 
+if (itr != tokens.end()){
+        std::vector<std::string> columns (++tokens.begin(), itr) ;
+        DebugPrintVector("!columns!", columns);
+}
+     
 //iterator vector.start()+1;
         
 //        find in vector "FROM" (enum keyword)
