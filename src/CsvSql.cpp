@@ -18,11 +18,11 @@ void DebugPrintVector(std::string vName, std::vector<T> & v)
 
 
 
-std::vector<std::string> CsvSql::GetColumnsFromHeader(std::string header)
+std::vector<std::string> Querry::GetColumnsFromHeader(std::string header)
 {
     std::stringstream headerStream(header);
     std::string column;
-    std::vector<std::string>columns;
+    std::vector <std::string>columns;
     while(getline(headerStream, column, ',')) {
         RemoveCharsFromStr(column, ' ');
         columns.push_back((column));
@@ -31,8 +31,8 @@ std::vector<std::string> CsvSql::GetColumnsFromHeader(std::string header)
     return columns;
 }
 
-std::vector<int> CsvSql::GetQuerredColumnsNumbers(std::vector<std::string> tableColumns, std::vector<std::string> querredColumns)
-{
+std::vector<int>Querry::GetQuerredColumnsNumbers(std::vector<std::string> tableColumns, std::vector<std::string> querredColumns)
+{ 
 std::vector<int> clmnsNb;
             for (int i =0 ; i < querredColumns.size(); i++) {
                 for (int j =0 ; j < tableColumns.size(); j++) {
@@ -44,8 +44,8 @@ std::vector<int> clmnsNb;
     return clmnsNb;
 }
 
-std::string CsvSql::GetFieldsFromSelectedColumns(std::vector<int> clmnsNb, std::string tableName){
-                        std::string querredFields;
+std::string Querry::GetFieldsFromSelectedColumns(std::vector<int> clmnsNb, std::string tableName){
+            std::string querredFields;
             std::string line;
             std::ifstream tableFileIn(tableName);
             while( getline(tableFileIn, line) ) {
@@ -70,6 +70,7 @@ return querredFields;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+Querry::Querry(std::string querrry) : _querryData{querrry}{};
 
 void Querry::RemoveCharsFromStr(std::string &s, char c)
 {
@@ -77,9 +78,9 @@ void Querry::RemoveCharsFromStr(std::string &s, char c)
 }
 
 
-std::vector<std::string>  Querry::GetTokes(std::string querry)
+std::vector<std::string>  Querry::GetTokens()
 {
-    std::stringstream querryStream (querry);
+    std::stringstream querryStream ( _querryData);
     std::string token;
     std::vector<std::string> tokens;
     while(getline(querryStream, token, ' ')) {
@@ -163,53 +164,55 @@ std::string  CsvSql::SendQuerry(Querry querry)
     if (*tokens.begin()== "SELECT") {   //select querry derives from base "QUERRY" class
         std::vector<std::string> querredColumns;
 
-iterator vector.start()+1;
+     std::vector<std::string>::iterator  it = tokens.begin() +1 ;
+     std::cout <<*it<<std::endl;
+//iterator vector.start()+1;
         
-        find in vector "FROM" (enum keyword)
-        get new vector between (start+1) and founded from.
-        That new vector is columns.
-        Next iterator is table in use
-        
-        
-        for (auto i : tokens){
-            while ( i != "FROM"){
-                std::vector(input_iterator, input_iterator), in your case foo = std::vector(myVec.begin () + 100000, myVec.begin () + 150000);
-            }
-        }
-        
-        while ((tokens[i] != "FROM") && (i<tokens.size())) {
-            querredColumns.push_back( tokens[i]);
-            i++;
-        }
-        i++; //skip keyword "from"Nb
-        std::string table = tokens[i];
-
-        std::cout<<"table in use: "<<table<<std::endl;
-
-
-        if (1) { 
-            std::fstream tableFile;
-            tableFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-            try {
-                tableFile.open(table,  std::fstream::in | std::fstream::out | std::fstream::app);
-            } catch(const std::ifstream::failure& e) {
-                std::cerr << "Error: " << e.what();
-            }
-
-            std::string header;
-            std::getline(tableFile, header) ;
-
-            std::vector<std::string> columns = GetColumnsFromHeader(header);
-            DebugPrintVector("columns", columns);
-
-            std::vector<int> clmnsNb = GetQuerredColumnsNumbers(columns,  querredColumns);
-
-           std::string querryRes =GetFieldsFromSelectedColumns(clmnsNb, table);
-            std::cout<<"result:"<<std::endl<<querryRes<<std::endl;
-
-            std::cout<<std::endl;
-
-        }
+//        find in vector "FROM" (enum keyword)
+//        get new vector between (start+1) and founded from.
+//        That new vector is columns.
+//        Next iterator is table in use
+//        
+//        
+//        for (auto i : tokens){
+//            while ( i != "FROM"){
+//                std::vector(input_iterator, input_iterator), in your case foo = std::vector(myVec.begin () + 100000, myVec.begin () + 150000);
+//            }
+//        }
+//        
+//        while ((tokens[i] != "FROM") && (i<tokens.size())) {
+//            querredColumns.push_back( tokens[i]);
+//            i++;
+//        }
+//        i++; //skip keyword "from"Nb
+//        std::string table = tokens[i];
+//
+//        std::cout<<"table in use: "<<table<<std::endl;
+//
+//
+//        if (1) { 
+//            std::fstream tableFile;
+//            tableFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+//            try {
+//                tableFile.open(table,  std::fstream::in | std::fstream::out | std::fstream::app);
+//            } catch(const std::ifstream::failure& e) {
+//                std::cerr << "Error: " << e.what();
+//            }
+//
+//            std::string header;
+//            std::getline(tableFile, header) ;
+//
+//            std::vector<std::string> columns = GetColumnsFromHeader(header);
+//            DebugPrintVector("columns", columns);
+//
+//            std::vector<int> clmnsNb = GetQuerredColumnsNumbers(columns,  querredColumns);
+//
+//           std::string querryRes =GetFieldsFromSelectedColumns(clmnsNb, table);
+//            std::cout<<"result:"<<std::endl<<querryRes<<std::endl;
+//
+//            std::cout<<std::endl;
+//
+//        }
         return res;
     }
 }

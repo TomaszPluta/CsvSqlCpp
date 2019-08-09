@@ -7,7 +7,8 @@ int main(int argc, char **argv)
     CsvSql csvSqlConnector;
     try{
     csvSqlConnector.Connect("host",  "usr", "pwd", "testDB");
-     csvSqlConnector.SendQuerry("SELECT Name, City FROM Customers");
+    Querry querry("SELECT Name, City FROM Customers");
+    csvSqlConnector.SendQuerry(querry);
     }
     catch(...){
         std::cout<<"database content error"<<std::endl;
