@@ -2,7 +2,8 @@
 
 #include <string>
 #include <vector>
-
+#include <fstream>
+#include <iostream>
 
 
 
@@ -13,7 +14,7 @@ private:
 public:
     Querry(std::string querrry);
      std::vector<std::string> GetTokens();
-    std::vector<std::string> GetColumnsFromHeader(std::string header);
+    std::vector<std::string> Table::GetColumns(void);
     std::vector<int> GetQuerredColumnsNumbers(std::vector<std::string> tableColumns, std::vector<std::string> querredColumns);
     std::string GetFieldsFromSelectedColumns(std::vector<int> clmnsNb, std::string tableName);
 };
@@ -34,14 +35,14 @@ public:
 
 class Table{
  private:
-
+std::ifstream _tableFile;
+   //std::string GetColumnsNames(void);
+   
 public:    
-  Table (std::string tabaleName)  {
-  std::ifstream tableFileIn(tableName);
-  
-  }
-    
-}
+  Table (std::string tableName) ;
+   std::string GetSelectedColumnsContent(std::vector<std::string> columns);
+   void InsertContentIntoColumns(std::vector<std::string> content, std::vector<std::string> columns);
+};
 
 
 
