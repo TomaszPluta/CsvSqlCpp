@@ -6,52 +6,80 @@
 #include <map>
 
 
+
+/***********************************************************************************
+ HELPERS DECLARATIONS 
+************************************************************************************/
 template<class T>
-void DebugPrintVector(std::string vName, std::vector<T> & v)
+void DebugPrintVector(std::string vName, std::vector<T> & v);
+void RemoveCharsFromStr(std::string &s, char c);
+
+
+/***********************************************************************************
+CLASS IMPLEMENTATION:  CSVSQL 
+************************************************************************************/
+
+CsvSql::CsvSql (){};
+
+void CsvSql::Connect(std::string host,  std::string user, std::string password, std::string  dataBase)
 {
-    std::cout<<vName<<": "<<std::endl;
-    for (auto i : v) {
-        std::cout<<"- "<<i<<std::endl;
+    std::ifstream dbFile;
+    dbFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try {
+        dbFile.open(dataBase.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+    } catch(const std::ifstream::failure& e) {
+        std::cerr << "Error: " << e.what();
     }
-    std::cout<<std::endl;
+
+    if ( dbFile.peek() == std::ifstream::traits_type::eof() ) {
+        throw std::runtime_error("Could not open file");
+    }
+
+    std::vector<std::string> tables;
+    std::string table;
+    while(!dbFile.eof() &&(dbFile >> table)) {
+        tables.push_back(table);
+    }
+
+    std::cout<<"database in use: " << dataBase<<std::endl;
+    DebugPrintVector("tables", tables);
+
 }
 
 
 
-std::string Querry::GetFieldsFromSelectedColumns(std::vector<int> clmnsNb, std::string tableName)
+/***********************************************************************************
+CLASS IMPLEMENTATION:  QUERRY 
+************************************************************************************/
+
+std::string  CsvSql::SendQuerry(Querry querry)
 {
-    std::string querredFields;
-    std::string line;
-    std::ifstream tableFileIn(tableName);
-    while( getline(tableFileIn, line) ) {
-        int i = 0;
-        std::stringstream ss(line);
-        std::string field;
-        while( getline(ss, field, ',')) {
-            if (field.empty()) {
-                break;
-            }
-            if ( (std::find(clmnsNb.begin(), clmnsNb.end(), i) !=clmnsNb.end())) {
-                RemoveCharsFromStr(field, ' ');
-                querredFields += field + " ";
-            }
-            i++;
+    std::vector<std::string> tokens = querry.GetTokens();
+    DebugPrintVector("tokens", tokens);
+
+    if (*tokens.begin()== "SELECT") {   //select querry should derive from base "QUERRY" class
+        std::vector<std::string>::iterator iter = (std::find(tokens.begin(), tokens.end(), std::string("FROM")) );
+
+        if (iter != tokens.end()) {
+            std::vector<std::string> columnsQuerry (++tokens.begin(), iter) ;
+            DebugPrintVector("columns in querry:", columnsQuerry);
+            std::string tableInUse = *++iter;
+            
+            Table table(tableInUse);
+          return   table.GetSelectedColumnsContent(columnsQuerry);
         }
-        querredFields +=  "\n";
+
+
+    return std::string(" ");
+
     }
-
-    return querredFields;
 }
 
-/*************************************************************************************/
 
+/***********************************************************************************
+ QUERRY CLASS IMPLEMENTATION
+************************************************************************************/
 Querry::Querry(std::string querrry) : _querryData {querrry} {};
-
-void Querry::RemoveCharsFromStr(std::string &s, char c)
-{
-    s.erase(std::remove(s.begin(), s.end(), c), s.end());
-}
-
 
 std::vector<std::string>  Querry::GetTokens()
 {
@@ -72,106 +100,6 @@ std::vector<std::string>  Querry::GetTokens()
 
 
 
-
-
-/*************************************************************************************/
-
-/**
- * @brief
- * @param querry
- * @return
- */
-CsvSql::CsvSql ()
-{
-
-}
-
-
-/**
- * @brief
- * @param querry
- * @return
- */
-void CsvSql::Connect(std::string host,  std::string user, std::string password, std::string  dataBase)
-{
-    std::ifstream dbFile;
-    dbFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try {
-        dbFile.open(dataBase.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
-    } catch(const std::ifstream::failure& e) {
-        std::cerr << "Error: " << e.what();
-    }
-
-
-
-    if ( dbFile.peek() == std::ifstream::traits_type::eof() ) {
-        throw std::runtime_error("Could not open file");
-    }
-
-    std::vector<std::string> tables;
-    std::string table;
-    while(!dbFile.eof() &&(dbFile >> table)) {
-        tables.push_back(table);
-    }
-
-    std::cout<<"database in use: " << dataBase<<std::endl;
-    DebugPrintVector("tables", tables);
-
-}
-
-
-//class querry, class table.
-
-
-/**
- * @brief
- * @param querry
- * @return
- */
-std::string  CsvSql::SendQuerry(Querry querry) //Table table
-{
-    std::vector<std::string> tokens = querry.GetTokens();
-    DebugPrintVector("tokens", tokens);
-
-    if (*tokens.begin()== "SELECT") {   //select querry should derive from base "QUERRY" class
-        std::vector<std::string>::iterator iter = (std::find(tokens.begin(), tokens.end(), std::string("FROM")) );
-
-        if (iter != tokens.end()) {
-            std::vector<std::string> columnsQuerry (++tokens.begin(), iter) ;
-            DebugPrintVector("columns in querry:", columnsQuerry);
-            std::string tableInUse = *++iter;
-
-        }
-
-
-
-//        if (1) {
-//            std::fstream tableFile;
-//            tableFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-//            try {
-//                tableFile.open(table,  std::fstream::in | std::fstream::out | std::fstream::app);
-//            } catch(const std::ifstream::failure& e) {
-//                std::cerr << "Error: " << e.what();
-//            }
-//
-//            std::string header;
-//            std::getline(tableFile, header) ;
-//
-//            std::vector<std::string> columns = GetColumnsFromHeader(header);
-//            DebugPrintVector("columns", columns);
-//
-//            std::vector<int> clmnsNb = GetQuerredColumnsNumbers(columns,  querredColumns);
-//
-//           std::string querryRes =GetFieldsFromSelectedColumns(clmnsNb, table);
-//            std::cout<<"result:"<<std::endl<<querryRes<<std::endl;
-//
-//            std::cout<<std::endl;
-//
-//        }
-    }
-}
-
-
 /*************************************************************************************/
 
 Table::Table (std::string tableName)
@@ -182,7 +110,7 @@ Table::Table (std::string tableName)
 
 
 
-std::vector<std::string> Table::GetColumns(void)
+std::vector<std::string> Table::GetColumnsNames(void)
 {
     std::string header;
     getline(_tableFile, header);
@@ -193,7 +121,6 @@ std::vector<std::string> Table::GetColumns(void)
         RemoveCharsFromStr(column, ' ');
         columns.push_back((column));
     }
-
     return columns;
 }
 
@@ -211,7 +138,7 @@ std::vector<int>Table::GetSelectedColumnsNumbers(std::vector<std::string> tableC
     
     }
     
-    std::string Table::GetFieldsFromSelectedColumnsNumbers(std::vector<int> clmnsNb, std::string tableName)
+    std::string Table::GetFieldsFromSelectedColumnsNumbers(std::vector<int> clmnsNb)
     {
         std::string querredFields;
         std::string line;
@@ -237,11 +164,30 @@ std::vector<int>Table::GetSelectedColumnsNumbers(std::vector<std::string> tableC
     
 std::string Table::GetSelectedColumnsContent(std::vector<std::string> selectedColumns)
 {
-
-    std::vector<std::string> tableColumns = GetColumns(void);
-    std::vector<int> clmnsNb = GetSelectedColumnsNumbers(tableColumns, selectedColumns);
+    std::vector<std::string> columnsNames = GetColumnsNames();
+    std::vector<int> clmnsNb = GetSelectedColumnsNumbers(columnsNames, selectedColumns);
     return GetFieldsFromSelectedColumnsNumbers(clmnsNb);
-    
-    
-  
+}
+
+
+
+/*************************************************************************************
+    HELPERS
+*************************************************************************************/
+
+
+template<class T>
+void DebugPrintVector(std::string vName, std::vector<T> & v)
+{
+    std::cout<<vName<<": "<<std::endl;
+    for (auto i : v) {
+        std::cout<<"- "<<i<<std::endl;
+    }
+    std::cout<<std::endl;
+}
+
+
+void RemoveCharsFromStr(std::string &s, char c)
+{
+    s.erase(std::remove(s.begin(), s.end(), c), s.end());
 }

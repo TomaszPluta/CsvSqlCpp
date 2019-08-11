@@ -10,11 +10,9 @@
 class Querry{
 private:
     std::string _querryData;
-    void RemoveCharsFromStr(std::string &s, char c);
 public:
     Querry(std::string querrry);
      std::vector<std::string> GetTokens();
-    std::vector<std::string> Table::GetColumns(void);
     std::vector<int> GetQuerredColumnsNumbers(std::vector<std::string> tableColumns, std::vector<std::string> querredColumns);
     std::string GetFieldsFromSelectedColumns(std::vector<int> clmnsNb, std::string tableName);
 };
@@ -36,12 +34,16 @@ public:
 class Table{
  private:
 std::ifstream _tableFile;
-   //std::string GetColumnsNames(void);
-   
+std::vector<std::string> GetColumnsNames(void);
+std::vector<int>GetSelectedColumnsNumbers(std::vector<std::string> tableColumns, std::vector<std::string> querredColumns);
+std::string GetFieldsFromSelectedColumnsNumbers(std::vector<int> clmnsNb);
+    
+    
 public:    
   Table (std::string tableName) ;
-   std::string GetSelectedColumnsContent(std::vector<std::string> columns);
+    std::string GetSelectedColumnsContent(std::vector<std::string> columns);
    void InsertContentIntoColumns(std::vector<std::string> content, std::vector<std::string> columns);
+   
 };
 
 
