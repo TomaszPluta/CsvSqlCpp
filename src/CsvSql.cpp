@@ -43,14 +43,9 @@ void CsvSql::Connect(std::string host,  std::string user, std::string password, 
 
     std::cout<<"database in use: " << dataBase<<std::endl;
     DebugPrintVector("tables", tables);
-
 }
 
 
-
-/***********************************************************************************
-CLASS IMPLEMENTATION:  QUERRY 
-************************************************************************************/
 
 std::string  CsvSql::SendQuerry(Querry querry)
 {
@@ -64,21 +59,23 @@ std::string  CsvSql::SendQuerry(Querry querry)
             std::vector<std::string> columnsQuerry (++tokens.begin(), iter) ;
             DebugPrintVector("columns in querry:", columnsQuerry);
             std::string tableInUse = *++iter;
-            
+
             Table table(tableInUse);
-          return   table.GetSelectedColumnsContent(columnsQuerry);
+            return   table.GetSelectedColumnsContent(columnsQuerry);
         }
-
-
+    } else if (*tokens.begin()== "SELECT") {
+        ///TODO;
+        }
     return std::string(" ");
-
-    }
 }
 
 
+
 /***********************************************************************************
- QUERRY CLASS IMPLEMENTATION
+CLASS IMPLEMENTATION:  QUERRY 
 ************************************************************************************/
+
+
 Querry::Querry(std::string querrry) : _querryData {querrry} {};
 
 std::vector<std::string>  Querry::GetTokens()
@@ -94,20 +91,14 @@ std::vector<std::string>  Querry::GetTokens()
 }
 
 
-
-
-
-
-
-
-/*************************************************************************************/
+/***********************************************************************************
+CLASS IMPLEMENTATION:  Table 
+************************************************************************************/
 
 Table::Table (std::string tableName)
 {
     _tableFile.open(tableName);
 }
-
-
 
 
 std::vector<std::string> Table::GetColumnsNames(void)
@@ -147,9 +138,6 @@ std::vector<int>Table::GetSelectedColumnsNumbers(std::vector<std::string> tableC
             std::stringstream ss(line);
             std::string field;
             while( getline(ss, field, ',')) {
-                if (field.empty()) {
-                    break;
-                }
                 if ( (std::find(clmnsNb.begin(), clmnsNb.end(), i) !=clmnsNb.end())) {
                     RemoveCharsFromStr(field, ' ');
                     querredFields += field + " ";
